@@ -25,6 +25,17 @@ from ..learning.integrator import LearningIntegrator
 from ..learning.knowledge_updater import KnowledgeUpdater
 from ..learning.forgetting_prevention import ForgettingPreventionSystem
 
+# Enhanced 10x features
+from ..nlp.intent import IntentClassifier
+from ..nlp.entities import EntityExtractor
+from ..nlp.sentiment import SentimentAnalyzer
+from ..nlp.embeddings import EnhancedEmbeddings
+from ..conversation.state import ConversationManager
+from ..proactive.suggestions import ProactiveSuggestionEngine
+from ..goals.tracking import GoalTracker
+from ..analytics.insights import AnalyticsEngine
+from ..plugins.system import PluginSystem, create_builtin_plugins
+
 
 class CentralNervousSystem:
     """
@@ -66,6 +77,21 @@ class CentralNervousSystem:
         )
         self.forgetting_prevention = ForgettingPreventionSystem(self.memory_repo)
 
+        # Initialize 10x enhanced systems
+        self.intent_classifier = IntentClassifier()
+        self.entity_extractor = EntityExtractor()
+        self.sentiment_analyzer = SentimentAnalyzer()
+        self.embeddings = EnhancedEmbeddings()
+        self.conversation = ConversationManager()
+        self.proactive = ProactiveSuggestionEngine()
+        self.goals = GoalTracker()
+        self.analytics = AnalyticsEngine()
+        self.plugins = PluginSystem()
+
+        # Register built-in plugins
+        for plugin in create_builtin_plugins():
+            self.plugins.register(plugin)
+
     async def process_stimulus(
         self,
         stimulus: Stimulus,
@@ -74,30 +100,80 @@ class CentralNervousSystem:
         """
         Main entry point - process a stimulus and produce a response.
 
-        This is the core loop:
-        1. Enrich context with memories
-        2. Apply personality filters
-        3. Meta-reasoning to decide action type
-        4. Value alignment validation
-        5. Execute with transparency
+        Enhanced 10x pipeline:
+        1. NLP analysis (intent, entities, sentiment)
+        2. Conversation state update
+        3. Enrich context with memories
+        4. Get proactive suggestions
+        5. Meta-reasoning to decide action type
+        6. Value alignment validation
+        7. Execute with transparency (possibly via plugins)
+        8. Analytics logging
+        9. Learning from interaction
         """
 
-        # 1. Enrich context
-        enriched_context = await self._enrich_context(stimulus)
+        # Get input text
+        input_text = stimulus.data.get("message", str(stimulus.data))
 
-        # 2. Get personality tone
+        # 1. NLP Analysis
+        intent_result = self.intent_classifier.classify(input_text, self.user_id)
+        entities = self.entity_extractor.extract_as_dict(input_text)
+        sentiment = self.sentiment_analyzer.analyze(input_text)
+
+        # Update stimulus with NLP results
+        stimulus.data["intent"] = intent_result
+        stimulus.data["entities"] = entities
+        stimulus.data["sentiment"] = {
+            "polarity": sentiment.polarity,
+            "intensity": sentiment.intensity,
+            "emotions": sentiment.emotions
+        }
+
+        # 2. Update conversation state
+        self.conversation.add_turn(
+            user_id=self.user_id,
+            role="user",
+            content=input_text,
+            intent=intent_result["primary_intent"],
+            entities=entities,
+            sentiment=stimulus.data["sentiment"]
+        )
+
+        # 3. Enrich context
+        enriched_context = await self._enrich_context(stimulus)
+        enriched_context["conversation"] = self.conversation.get_current_context(self.user_id)
+        enriched_context["sentiment"] = stimulus.data["sentiment"]
+
+        # 4. Get proactive suggestions
+        preferences = await self.memory.preference_graph.get_preferences(
+            self.user_id, min_strength=0.3
+        )
+        recent_interactions = self.interaction_repo.get_recent(self.user_id, limit=10)
+        suggestions = self.proactive.analyze_and_suggest(
+            self.user_id,
+            enriched_context,
+            [{"preference": p.preference, "strength": p.strength} for p in preferences],
+            [{"intent": i.event_type} for i in recent_interactions]
+        )
+        enriched_context["proactive_suggestions"] = [s.content for s in suggestions[:3]]
+
+        # Learn time patterns
+        self.proactive.learn_time_pattern(
+            self.user_id,
+            intent_result["primary_intent"],
+            datetime.utcnow()
+        )
+
+        # 5. Get personality tone
         tone = self.personality.generate_response_tone(
             self.user_id,
             enriched_context
         )
 
-        # 3. Get relevant preferences and rules
-        preferences = await self.memory.preference_graph.get_preferences(
-            self.user_id, min_strength=0.3
-        )
+        # Get rules
         rules = self.rule_repo.get_by_user(self.user_id)
 
-        # 4. Meta-reasoning
+        # 6. Meta-reasoning
         decision = await self.reasoning.deliberate(
             context=enriched_context,
             preferences=preferences,
@@ -105,14 +181,51 @@ class CentralNervousSystem:
             proposed_action=proposed_action
         )
 
-        # 5. Value alignment
+        # 7. Value alignment
         validated_decision = await self.alignment.validate(self.user_id, decision)
 
-        # 6. Execute with transparency
-        result = await self.executor.execute(validated_decision)
+        # 8. Execute (try plugins first)
+        plugin_result = await self.plugins.execute_for_intent(
+            intent_result["primary_intent"],
+            entities,
+            enriched_context,
+            stimulus.data
+        )
 
-        # 7. Record interaction for learning
+        if plugin_result and plugin_result.success:
+            result = ActionResult(
+                user_id=self.user_id,
+                decision_id=validated_decision.id,
+                success=True,
+                result_data=plugin_result.data,
+                explanation=plugin_result.message,
+                confidence=validated_decision.confidence
+            )
+        else:
+            result = await self.executor.execute(validated_decision)
+
+        # 9. Analytics logging
+        self.analytics.log_interaction(
+            user_id=self.user_id,
+            interaction_type=intent_result["primary_intent"],
+            intent=intent_result["primary_intent"],
+            success=result.success,
+            confidence=result.confidence,
+            metadata={"entities": entities, "sentiment": sentiment.polarity}
+        )
+
+        # 10. Record interaction for learning
         await self._record_interaction(stimulus, result)
+
+        # Update conversation with response
+        self.conversation.add_turn(
+            user_id=self.user_id,
+            role="agent",
+            content=result.explanation,
+            intent="response",
+            entities={},
+            sentiment={"polarity": 0.0}
+        )
 
         return result
 
@@ -325,3 +438,89 @@ class CentralNervousSystem:
             importance=importance,
             context_tags=tags or []
         )
+
+    # ========== 10x Enhanced Methods ==========
+
+    def create_goal(
+        self,
+        title: str,
+        description: str = "",
+        category: str = "general",
+        milestones: List[str] = None,
+        priority: int = 5
+    ):
+        """Create a new goal."""
+        return self.goals.create_goal(
+            user_id=self.user_id,
+            title=title,
+            description=description,
+            category=category,
+            milestones=milestones,
+            priority=priority
+        )
+
+    def update_goal_progress(self, goal_id: str, progress: float):
+        """Update goal progress."""
+        self.goals.update_progress(self.user_id, goal_id, progress=progress)
+
+    def get_active_goals(self):
+        """Get all active goals."""
+        return self.goals.get_active_goals(self.user_id)
+
+    def get_goal_suggestions(self):
+        """Get suggested next actions for goals."""
+        return self.goals.suggest_next_actions(self.user_id)
+
+    def get_analytics_dashboard(self) -> Dict:
+        """Get full analytics dashboard."""
+        return self.analytics.get_dashboard(self.user_id)
+
+    def get_conversation_summary(self) -> str:
+        """Get summary of current conversation."""
+        return self.conversation.get_summary(self.user_id)
+
+    def get_proactive_suggestions(self) -> List:
+        """Get current proactive suggestions."""
+        context = {
+            "time_of_day": datetime.utcnow().strftime("%H:00"),
+            "user_id": self.user_id
+        }
+        preferences = self.pref_repo.get_by_user(self.user_id)
+        recent = self.interaction_repo.get_recent(self.user_id, limit=10)
+
+        return self.proactive.analyze_and_suggest(
+            self.user_id,
+            context,
+            [{"preference": p.preference, "strength": p.strength} for p in preferences],
+            [{"intent": i.event_type} for i in recent]
+        )
+
+    def list_plugins(self) -> List[Dict]:
+        """List all available plugins."""
+        return self.plugins.list_plugins()
+
+    def get_sentiment_analysis(self, text: str) -> Dict:
+        """Analyze sentiment of text."""
+        result = self.sentiment_analyzer.analyze(text)
+        return {
+            "polarity": result.polarity,
+            "intensity": result.intensity,
+            "emotions": result.emotions,
+            "needs_empathy": self.sentiment_analyzer.needs_empathy(text)
+        }
+
+    def extract_entities(self, text: str) -> Dict:
+        """Extract entities from text."""
+        return self.entity_extractor.extract_as_dict(text)
+
+    def classify_intent(self, text: str) -> Dict:
+        """Classify intent of text."""
+        return self.intent_classifier.classify(text, self.user_id)
+
+    def should_clarify(self) -> tuple:
+        """Check if clarification is needed in conversation."""
+        return self.conversation.should_clarify(self.user_id)
+
+    def clear_conversation(self):
+        """Clear conversation state."""
+        self.conversation.clear(self.user_id)
