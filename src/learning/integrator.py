@@ -1,6 +1,6 @@
 """Integrate learning updates with conflict resolution."""
 
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from datetime import datetime
 
 from ..models.learning import LearningUpdate, UpdateType

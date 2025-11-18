@@ -1,6 +1,6 @@
 """Goal tracking system for long-term objectives."""
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 import uuid
