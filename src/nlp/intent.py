@@ -1,6 +1,5 @@
 """Intent classification using pattern matching and ML-like scoring."""
 
-from typing import Dict, List, Tuple
 import re
 from collections import defaultdict
 
@@ -85,7 +84,7 @@ class IntentClassifier:
         }
 
         # Learned intent boosts per user
-        self.user_intent_history: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        self.user_intent_history: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
 
         # Intent confidence thresholds
         self.thresholds = {
@@ -94,7 +93,7 @@ class IntentClassifier:
             "low": 0.3
         }
 
-    def classify(self, text: str, user_id: str = "") -> Dict:
+    def classify(self, text: str, user_id: str = "") -> dict:
         """
         Classify the intent of the input text.
 
@@ -145,7 +144,7 @@ class IntentClassifier:
             "all_scores": scores
         }
 
-    def _score_intent(self, text: str, patterns: List) -> float:
+    def _score_intent(self, text: str, patterns: list) -> float:
         """Score how well text matches intent patterns."""
         matches = 0
         total_patterns = len(patterns)
@@ -170,7 +169,7 @@ class IntentClassifier:
         """Learn from confirmed intent classification."""
         self.user_intent_history[user_id][actual_intent] += 1
 
-    def get_intent_keywords(self, intent: str) -> List[str]:
+    def get_intent_keywords(self, intent: str) -> list[str]:
         """Get keywords associated with an intent."""
         keywords = {
             "schedule": ["meeting", "calendar", "schedule", "book", "appointment"],
@@ -186,7 +185,7 @@ class IntentClassifier:
         }
         return keywords.get(intent, [])
 
-    def add_custom_intent(self, intent_name: str, patterns: List[str]):
+    def add_custom_intent(self, intent_name: str, patterns: list[str]):
         """Add a custom intent with patterns."""
         self.intent_patterns[intent_name] = patterns
         self.compiled_patterns[intent_name] = [

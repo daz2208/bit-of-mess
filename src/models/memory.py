@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
 import numpy as np
 
 from .base import BaseModel, MemoryType
@@ -14,7 +13,7 @@ class MemoryEntry(BaseModel):
     user_id: str = ""
     memory_type: MemoryType = MemoryType.EPISODIC
     content: str = ""
-    embedding: Optional[np.ndarray] = None
+    embedding: np.ndarray | None = None
     importance: float = 0.5
     access_count: int = 0
     last_accessed: datetime = field(default_factory=datetime.utcnow)

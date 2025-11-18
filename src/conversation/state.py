@@ -1,6 +1,5 @@
 """Conversation state management for multi-turn interactions."""
 
-from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from collections import deque
@@ -14,10 +13,10 @@ class Turn:
     role: str  # "user" or "agent"
     content: str
     intent: str
-    entities: Dict
-    sentiment: Dict
+    entities: dict
+    sentiment: dict
     timestamp: datetime
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -25,16 +24,16 @@ class ConversationState:
     """Current state of the conversation."""
     id: str
     user_id: str
-    turns: List[Turn]
+    turns: list[Turn]
     current_topic: str
-    topics_discussed: List[str]
-    pending_questions: List[str]
-    context_stack: List[Dict]
+    topics_discussed: list[str]
+    pending_questions: list[str]
+    context_stack: list[dict]
     last_activity: datetime
-    sentiment_trend: List[float]
-    unresolved_intents: List[str]
+    sentiment_trend: list[float]
+    unresolved_intents: list[str]
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "id": self.id,
             "user_id": self.user_id,
@@ -60,7 +59,7 @@ class ConversationManager:
     """
 
     def __init__(self):
-        self.conversations: Dict[str, ConversationState] = {}
+        self.conversations: dict[str, ConversationState] = {}
         self.max_turns = 100
         self.context_timeout = timedelta(minutes=30)
 
@@ -100,9 +99,9 @@ class ConversationManager:
         role: str,
         content: str,
         intent: str,
-        entities: Dict,
-        sentiment: Dict,
-        metadata: Dict = None
+        entities: dict,
+        sentiment: dict,
+        metadata: dict = None
     ) -> Turn:
         """Add a turn to the conversation."""
         conv = self.get_or_create(user_id)
@@ -133,7 +132,7 @@ class ConversationManager:
 
         return turn
 
-    def _update_topic(self, conv: ConversationState, intent: str, entities: Dict):
+    def _update_topic(self, conv: ConversationState, intent: str, entities: dict):
         """Update current topic based on turn."""
         # Extract topic from intent and entities
         topic = intent
@@ -149,7 +148,7 @@ class ConversationManager:
                 conv.topics_discussed.append(conv.current_topic)
             conv.current_topic = topic
 
-    def _track_sentiment(self, conv: ConversationState, sentiment: Dict):
+    def _track_sentiment(self, conv: ConversationState, sentiment: dict):
         """Track sentiment over time."""
         polarity = sentiment.get("polarity", 0.0)
         conv.sentiment_trend.append(polarity)
@@ -172,19 +171,19 @@ class ConversationManager:
         if conv.unresolved_intents and question_index < len(conv.unresolved_intents):
             conv.unresolved_intents.pop(question_index)
 
-    def push_context(self, user_id: str, context: Dict):
+    def push_context(self, user_id: str, context: dict):
         """Push a context onto the stack (for nested conversations)."""
         conv = self.get_or_create(user_id)
         conv.context_stack.append(context)
 
-    def pop_context(self, user_id: str) -> Optional[Dict]:
+    def pop_context(self, user_id: str) -> dict | None:
         """Pop context from stack."""
         conv = self.get_or_create(user_id)
         if conv.context_stack:
             return conv.context_stack.pop()
         return None
 
-    def get_current_context(self, user_id: str) -> Dict:
+    def get_current_context(self, user_id: str) -> dict:
         """Get current conversation context."""
         conv = self.get_or_create(user_id)
 
@@ -259,7 +258,7 @@ class ConversationManager:
 
         return " ".join(summary_parts)
 
-    def should_clarify(self, user_id: str) -> Tuple[bool, str]:
+    def should_clarify(self, user_id: str) -> tuple[bool, str]:
         """Check if clarification is needed."""
         conv = self.get_or_create(user_id)
 
@@ -290,7 +289,3 @@ class ConversationManager:
         """Clear conversation state for user."""
         if user_id in self.conversations:
             del self.conversations[user_id]
-
-
-# Import for type hints
-from typing import Tuple

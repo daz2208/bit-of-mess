@@ -1,6 +1,6 @@
 """Entity extraction from natural language."""
 
-from typing import Dict, List, Tuple
+from typing import Any
 import re
 from datetime import datetime, timedelta
 from dataclasses import dataclass
@@ -11,7 +11,7 @@ class Entity:
     """Extracted entity."""
     type: str
     value: str
-    normalized: any
+    normalized: Any
     start: int
     end: int
     confidence: float
@@ -81,7 +81,7 @@ class EntityExtractor:
             (r'\b(low\s+priority|when\s+you\s+can|no\s+rush)\b', 'low')
         ]
 
-    def extract(self, text: str) -> List[Entity]:
+    def extract(self, text: str) -> list[Entity]:
         """Extract all entities from text."""
         entities = []
 
@@ -99,7 +99,7 @@ class EntityExtractor:
 
         return entities
 
-    def extract_as_dict(self, text: str) -> Dict:
+    def extract_as_dict(self, text: str) -> dict:
         """Extract entities and return as categorized dict."""
         entities = self.extract(text)
 
@@ -130,7 +130,7 @@ class EntityExtractor:
 
         return result
 
-    def _extract_times(self, text: str) -> List[Entity]:
+    def _extract_times(self, text: str) -> list[Entity]:
         """Extract time entities."""
         entities = []
         text_lower = text.lower()
@@ -185,7 +185,7 @@ class EntityExtractor:
 
         return match.group(0)
 
-    def _extract_dates(self, text: str) -> List[Entity]:
+    def _extract_dates(self, text: str) -> list[Entity]:
         """Extract date entities."""
         entities = []
         text_lower = text.lower()
@@ -227,7 +227,7 @@ class EntityExtractor:
 
         return match.group(0)
 
-    def _extract_durations(self, text: str) -> List[Entity]:
+    def _extract_durations(self, text: str) -> list[Entity]:
         """Extract duration entities."""
         entities = []
         text_lower = text.lower()
@@ -270,7 +270,7 @@ class EntityExtractor:
 
         return 0
 
-    def _extract_people(self, text: str) -> List[Entity]:
+    def _extract_people(self, text: str) -> list[Entity]:
         """Extract person names."""
         entities = []
 
@@ -287,7 +287,7 @@ class EntityExtractor:
 
         return entities
 
-    def _extract_locations(self, text: str) -> List[Entity]:
+    def _extract_locations(self, text: str) -> list[Entity]:
         """Extract location entities."""
         entities = []
 
@@ -304,7 +304,7 @@ class EntityExtractor:
 
         return entities
 
-    def _extract_numbers(self, text: str) -> List[Entity]:
+    def _extract_numbers(self, text: str) -> list[Entity]:
         """Extract numeric entities."""
         entities = []
 
@@ -327,7 +327,7 @@ class EntityExtractor:
 
         return entities
 
-    def _extract_priorities(self, text: str) -> List[Entity]:
+    def _extract_priorities(self, text: str) -> list[Entity]:
         """Extract priority/urgency entities."""
         entities = []
         text_lower = text.lower()

@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
 from enum import Enum
 
 from .base import BaseModel, Context
@@ -35,7 +34,7 @@ class FeedbackEvent(BaseModel):
     user_id: str = ""
     type: FeedbackType = FeedbackType.DIRECT_CORRECTION
     data: dict = field(default_factory=dict)
-    context: Optional[Context] = None
+    context: Context | None = None
     emotional_tone: EmotionalTone = EmotionalTone.NEUTRAL
     processed: bool = False
 
@@ -74,7 +73,7 @@ class InteractionEvent(BaseModel):
     event_type: str = ""
     content: str = ""
     response: str = ""
-    context: Optional[Context] = None
+    context: Context | None = None
     duration_seconds: float = 0.0
     engagement_score: float = 0.5
     metadata: dict = field(default_factory=dict)
