@@ -1,6 +1,5 @@
 """Goal tracking system for long-term objectives."""
 
-from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 import uuid
@@ -11,9 +10,9 @@ class Milestone:
     """A milestone toward a goal."""
     id: str
     description: str
-    target_date: Optional[datetime]
+    target_date: datetime | None
     completed: bool
-    completed_at: Optional[datetime]
+    completed_at: datetime | None
     progress: float  # 0-1
 
 
@@ -26,15 +25,15 @@ class Goal:
     description: str
     category: str
     created_at: datetime
-    target_date: Optional[datetime]
-    milestones: List[Milestone]
+    target_date: datetime | None
+    milestones: list[Milestone]
     progress: float  # 0-1
     status: str  # "active", "completed", "paused", "abandoned"
     priority: int  # 1-10
-    related_preferences: List[str]
-    check_ins: List[Dict]
+    related_preferences: list[str]
+    check_ins: list[dict]
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "id": self.id,
             "title": self.title,
@@ -60,7 +59,7 @@ class GoalTracker:
     """
 
     def __init__(self):
-        self.goals: Dict[str, Dict[str, Goal]] = {}  # user_id -> goal_id -> Goal
+        self.goals: dict[str, dict[str, Goal]] = {}  # user_id -> goal_id -> Goal
 
     def create_goal(
         self,
@@ -68,8 +67,8 @@ class GoalTracker:
         title: str,
         description: str = "",
         category: str = "general",
-        target_date: Optional[datetime] = None,
-        milestones: List[str] = None,
+        target_date: datetime | None = None,
+        milestones: list[str] = None,
         priority: int = 5
     ) -> Goal:
         """Create a new goal."""
@@ -112,9 +111,9 @@ class GoalTracker:
         self,
         user_id: str,
         goal_id: str,
-        progress: Optional[float] = None,
-        milestone_id: Optional[str] = None,
-        milestone_progress: Optional[float] = None
+        progress: float | None = None,
+        milestone_id: str | None = None,
+        milestone_progress: float | None = None
     ):
         """Update goal or milestone progress."""
         if user_id not in self.goals or goal_id not in self.goals[user_id]:
@@ -155,14 +154,14 @@ class GoalTracker:
         """Mark a milestone as completed."""
         self.update_progress(user_id, goal_id, milestone_id=milestone_id, milestone_progress=1.0)
 
-    def get_active_goals(self, user_id: str) -> List[Goal]:
+    def get_active_goals(self, user_id: str) -> list[Goal]:
         """Get all active goals for a user."""
         if user_id not in self.goals:
             return []
 
         return [g for g in self.goals[user_id].values() if g.status == "active"]
 
-    def get_goal(self, user_id: str, goal_id: str) -> Optional[Goal]:
+    def get_goal(self, user_id: str, goal_id: str) -> Goal | None:
         """Get a specific goal."""
         if user_id not in self.goals:
             return None
@@ -172,7 +171,7 @@ class GoalTracker:
         self,
         user_id: str,
         days_ahead: int = 7
-    ) -> List[Tuple[Goal, Milestone]]:
+    ) -> list[tuple[Goal, Milestone]]:
         """Get milestones due in the next N days."""
         if user_id not in self.goals:
             return []
@@ -197,7 +196,7 @@ class GoalTracker:
         self,
         user_id: str,
         stall_days: int = 7
-    ) -> List[Goal]:
+    ) -> list[Goal]:
         """Get goals with no progress in N days."""
         if user_id not in self.goals:
             return []
@@ -219,7 +218,7 @@ class GoalTracker:
 
         return stalled
 
-    def suggest_next_actions(self, user_id: str) -> List[Dict]:
+    def suggest_next_actions(self, user_id: str) -> list[dict]:
         """Suggest next actions based on goals."""
         suggestions = []
 
@@ -265,7 +264,7 @@ class GoalTracker:
             "note": note
         })
 
-    def get_progress_summary(self, user_id: str) -> Dict:
+    def get_progress_summary(self, user_id: str) -> dict:
         """Get summary of all goal progress."""
         if user_id not in self.goals:
             return {"total": 0, "active": 0, "completed": 0, "avg_progress": 0}
@@ -287,7 +286,7 @@ class GoalTracker:
             "by_category": self._group_by_category(goals)
         }
 
-    def _group_by_category(self, goals: List[Goal]) -> Dict:
+    def _group_by_category(self, goals: list[Goal]) -> dict:
         """Group goals by category."""
         categories = {}
         for goal in goals:
@@ -302,7 +301,3 @@ class GoalTracker:
                 categories[cat]["avg_progress"] /= categories[cat]["count"]
 
         return categories
-
-
-# Import for type hints
-from typing import Tuple

@@ -1,6 +1,5 @@
 """Central Nervous System - Main orchestrator for the adaptive agent."""
 
-from typing import Dict, List, Optional
 from datetime import datetime
 
 from ..models.base import Context, Stimulus, ActionType
@@ -95,7 +94,7 @@ class CentralNervousSystem:
     async def process_stimulus(
         self,
         stimulus: Stimulus,
-        proposed_action: Optional[ActionPlan] = None
+        proposed_action: ActionPlan | None = None
     ) -> ActionResult:
         """
         Main entry point - process a stimulus and produce a response.
@@ -229,7 +228,7 @@ class CentralNervousSystem:
 
         return result
 
-    async def _enrich_context(self, stimulus: Stimulus) -> Dict:
+    async def _enrich_context(self, stimulus: Stimulus) -> dict:
         """Enrich the stimulus context with relevant memories and preferences."""
 
         # Build query from stimulus
@@ -289,7 +288,7 @@ class CentralNervousSystem:
     async def provide_feedback(
         self,
         feedback_type: FeedbackType,
-        data: Dict,
+        data: dict,
         emotional_tone: EmotionalTone = EmotionalTone.NEUTRAL
     ):
         """Process explicit user feedback."""
@@ -327,7 +326,7 @@ class CentralNervousSystem:
             )
             await self.personality.adapt_from_interaction(self.user_id, interaction)
 
-    async def _apply_learning(self, updates: List[LearningUpdate]):
+    async def _apply_learning(self, updates: list[LearningUpdate]):
         """Apply learning updates to knowledge systems."""
 
         if not updates:
@@ -386,7 +385,7 @@ class CentralNervousSystem:
             emotional_tone=emotional_tone
         )
 
-    async def get_profile_summary(self) -> Dict:
+    async def get_profile_summary(self) -> dict:
         """Get a summary of the user's profile and learned patterns."""
 
         profile = self.personality.get_profile(self.user_id)
@@ -424,7 +423,7 @@ class CentralNervousSystem:
         content: str,
         memory_type: str = "semantic",
         importance: float = 0.5,
-        tags: List[str] = None
+        tags: list[str] = None
     ):
         """Store new knowledge."""
 
@@ -446,7 +445,7 @@ class CentralNervousSystem:
         title: str,
         description: str = "",
         category: str = "general",
-        milestones: List[str] = None,
+        milestones: list[str] = None,
         priority: int = 5
     ):
         """Create a new goal."""
@@ -471,7 +470,7 @@ class CentralNervousSystem:
         """Get suggested next actions for goals."""
         return self.goals.suggest_next_actions(self.user_id)
 
-    def get_analytics_dashboard(self) -> Dict:
+    def get_analytics_dashboard(self) -> dict:
         """Get full analytics dashboard."""
         return self.analytics.get_dashboard(self.user_id)
 
@@ -479,7 +478,7 @@ class CentralNervousSystem:
         """Get summary of current conversation."""
         return self.conversation.get_summary(self.user_id)
 
-    def get_proactive_suggestions(self) -> List:
+    def get_proactive_suggestions(self) -> list:
         """Get current proactive suggestions."""
         context = {
             "time_of_day": datetime.utcnow().strftime("%H:00"),
@@ -495,11 +494,11 @@ class CentralNervousSystem:
             [{"intent": i.event_type} for i in recent]
         )
 
-    def list_plugins(self) -> List[Dict]:
+    def list_plugins(self) -> list[dict]:
         """List all available plugins."""
         return self.plugins.list_plugins()
 
-    def get_sentiment_analysis(self, text: str) -> Dict:
+    def get_sentiment_analysis(self, text: str) -> dict:
         """Analyze sentiment of text."""
         result = self.sentiment_analyzer.analyze(text)
         return {
@@ -509,11 +508,11 @@ class CentralNervousSystem:
             "needs_empathy": self.sentiment_analyzer.needs_empathy(text)
         }
 
-    def extract_entities(self, text: str) -> Dict:
+    def extract_entities(self, text: str) -> dict:
         """Extract entities from text."""
         return self.entity_extractor.extract_as_dict(text)
 
-    def classify_intent(self, text: str) -> Dict:
+    def classify_intent(self, text: str) -> dict:
         """Classify intent of text."""
         return self.intent_classifier.classify(text, self.user_id)
 

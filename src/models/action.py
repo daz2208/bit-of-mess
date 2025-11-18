@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
 
 from .base import BaseModel, ActionType
 
@@ -27,7 +26,7 @@ class Decision(BaseModel):
     """A decision made by the reasoning engine."""
     user_id: str = ""
     action_type: ActionType = ActionType.ASK_CLARIFICATION
-    action_plan: Optional[ActionPlan] = None
+    action_plan: ActionPlan | None = None
     confidence: float = 0.5
     intrusion_score: float = 0.5
     value_score: float = 0.5
@@ -51,7 +50,7 @@ class ActionResult(BaseModel):
     result_data: dict = field(default_factory=dict)
     explanation: str = ""
     confidence: float = 0.5
-    user_feedback: Optional[str] = None
+    user_feedback: str | None = None
 
     def to_dict(self) -> dict:
         return {

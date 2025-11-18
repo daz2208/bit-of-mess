@@ -3,7 +3,6 @@
 import json
 import numpy as np
 from datetime import datetime
-from typing import List, Optional
 
 from .database import Database
 from ..models.memory import MemoryEntry, PreferenceNode, Rule
@@ -40,7 +39,7 @@ class MemoryRepository:
             conn.commit()
         return memory.id
 
-    def get(self, memory_id: str) -> Optional[MemoryEntry]:
+    def get(self, memory_id: str) -> MemoryEntry | None:
         """Get a memory by ID."""
         with self.db.get_connection() as conn:
             cursor = conn.cursor()
@@ -51,8 +50,8 @@ class MemoryRepository:
             return self._row_to_memory(row)
         return None
 
-    def get_by_user(self, user_id: str, memory_type: Optional[MemoryType] = None,
-                    limit: int = 100) -> List[MemoryEntry]:
+    def get_by_user(self, user_id: str, memory_type: MemoryType | None = None,
+                    limit: int = 100) -> list[MemoryEntry]:
         """Get memories for a user, optionally filtered by type."""
         with self.db.get_connection() as conn:
             cursor = conn.cursor()
@@ -133,7 +132,7 @@ class PreferenceRepository:
             conn.commit()
         return pref.id
 
-    def get_by_user(self, user_id: str, category: Optional[str] = None) -> List[PreferenceNode]:
+    def get_by_user(self, user_id: str, category: str | None = None) -> list[PreferenceNode]:
         """Get preferences for a user."""
         with self.db.get_connection() as conn:
             cursor = conn.cursor()
@@ -201,7 +200,7 @@ class RuleRepository:
             conn.commit()
         return rule.id
 
-    def get_by_user(self, user_id: str) -> List[Rule]:
+    def get_by_user(self, user_id: str) -> list[Rule]:
         """Get all rules for a user."""
         with self.db.get_connection() as conn:
             cursor = conn.cursor()
@@ -248,7 +247,7 @@ class FeedbackRepository:
             conn.commit()
         return event.id
 
-    def get_unprocessed(self, user_id: str) -> List[FeedbackEvent]:
+    def get_unprocessed(self, user_id: str) -> list[FeedbackEvent]:
         """Get unprocessed feedback events."""
         with self.db.get_connection() as conn:
             cursor = conn.cursor()
@@ -324,7 +323,7 @@ class InteractionRepository:
             conn.commit()
         return interaction.id
 
-    def get_recent(self, user_id: str, limit: int = 100) -> List[InteractionEvent]:
+    def get_recent(self, user_id: str, limit: int = 100) -> list[InteractionEvent]:
         """Get recent interactions."""
         with self.db.get_connection() as conn:
             cursor = conn.cursor()
