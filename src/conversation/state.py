@@ -1,6 +1,6 @@
 """Conversation state management for multi-turn interactions."""
 
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from collections import deque
